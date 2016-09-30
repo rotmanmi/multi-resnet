@@ -37,27 +37,36 @@ local function createModel(opt)
 
       if nInputPlane == nOutputPlane then -- most Residual Units have this shape
 
-         local ls = {}
          local convs = nn.ConcatTable()
-         for i=1,k do
-           ls[i] = nn.Sequential()
-           -- conv1x1
-           ls[i]:add(SBatchNorm(nInputPlane))
-           ls[i]:add(ReLU(true))
-           ls[i]:add(Convolution(nInputPlane,nBottleneckPlane,1,1,stride,stride,0,0))
 
-           -- conv3x3
-           ls[i]:add(SBatchNorm(nBottleneckPlane))
-           ls[i]:add(ReLU(true))
-           ls[i]:add(Convolution(nBottleneckPlane,nBottleneckPlane,3,3,1,1,1,1))
+         local ls = nn.Sequential()
+         -- conv1x1
+         ls:add(SBatchNorm(nInputPlane))
+         ls:add(ReLU(true))
+         ls:add(Convolution(nInputPlane,nBottleneckPlane,1,1,stride,stride,0,0))
 
-           -- conv1x1
-           ls[i]:add(SBatchNorm(nBottleneckPlane))
-           ls[i]:add(ReLU(true))
-           ls[i]:add(Convolution(nBottleneckPlane,nOutputPlane,1,1,1,1,0,0))
-           ls[i]:add(nn.MulConstant(1.0 / k ,true))
-           convs:add(ls[i])
+         -- conv3x3
+         ls:add(SBatchNorm(nBottleneckPlane))
+         ls:add(ReLU(true))
+         ls:add(Convolution(nBottleneckPlane,nBottleneckPlane,3,3,1,1,1,1))
+
+         -- conv1x1
+         ls:add(SBatchNorm(nBottleneckPlane))
+         ls:add(ReLU(true))
+         ls:add(Convolution(nBottleneckPlane,nOutputPlane,1,1,1,1,0,0))
+
+
+         convs:add(ls[i])
+
+         local ks = {}
+         ks[1] = nn.Sequential():add(ls:clone('weight','bias'))
+         for i=2,k do
+            ks[i]:add(ks[i-1]:clone('weight','bias'))
+            ks[i]:add(nn.MulConstant(1/i,true))
          end
+
+         convs:add(ks[i])
+
 
          local sum_convs = nn.Sequential()
                 :add(convs)
