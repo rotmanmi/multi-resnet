@@ -55,17 +55,16 @@ local function createModel(opt)
          ls:add(ReLU(true))
          ls:add(Convolution(nBottleneckPlane,nOutputPlane,1,1,1,1,0,0))
 
-
-         convs:add(ls[i])
-
          local ks = {}
-         ks[1] = nn.Sequential():add(ls:clone('weight','bias'))
+         ks[1] = nn.Sequential():add(ls:clone('weight','gradWeight','bias','gradBias'))
+         convs:add(ks[1])
          for i=2,k do
-            ks[i]:add(ks[i-1]:clone('weight','bias'))
+            ks[i] = ks[i-1]:clone('weight','gradWeight','bias','gradBias')
+            ks[i]:add(ks[1]:clone('weight','gradWeight','bias','gradBias'))
             ks[i]:add(nn.MulConstant(1/i,true))
+            convs:add(ks[i])
          end
 
-         convs:add(ks[i])
 
 
          local sum_convs = nn.Sequential()
