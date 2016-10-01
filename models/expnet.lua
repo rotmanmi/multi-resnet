@@ -79,6 +79,7 @@ local function createModel(opt)
                :add(sum_convs)
                :add(shortcut))
             :add(nn.CAddTable(true))
+
       else -- Residual Units for increasing dimensions
          local block = nn.Sequential()
          -- common BN, ReLU
@@ -87,7 +88,7 @@ local function createModel(opt)
 
          local ls = {}
          local convs = nn.ConcatTable()
-         for i=1,k do
+         for i=1,1 do
            ls[i] = nn.Sequential()
            -- conv1x1
            ls[i]:add(Convolution(nInputPlane,nBottleneckPlane,1,1,stride,stride,0,0))
