@@ -56,12 +56,12 @@ local function createModel(opt)
          ls:add(Convolution(nBottleneckPlane,nOutputPlane,1,1,1,1,0,0))
 
          local ks = {}
-         ks[1] = nn.Sequential():add(ls:clone('weight','gradWeight','bias','gradBias'))
+         ks[1] = nn.Sequential():add(ls:clone()) --'weight','gradWeight'
          convs:add(ks[1])
          for i=2,k do
-            ks[i] = ks[i-1]:clone('weight','gradWeight','bias','gradBias')
-            ks[i]:add(ks[1]:clone('weight','gradWeight','bias','gradBias'))
-            ks[i]:add(nn.MulConstant(1/i,true))
+            ks[i] = ks[i-1]:clone() --'weight','gradWeight'
+            ks[i]:add(ks[1]:clone()) --'weight','gradWeight'
+            ks[i]:add(nn.MulConstant(1/i),true)
             convs:add(ks[i])
          end
 
@@ -212,7 +212,7 @@ local function createModel(opt)
    end
 
    model:get(1).gradInput = nil
-
+	print(model)
    return model
 end
 
