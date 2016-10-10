@@ -19,7 +19,6 @@ local DataLoader = torch.class('resnet.DataLoader', M)
 function DataLoader.create(opt)
    -- The train and val loader
    local loaders = {}
-
    for i, split in ipairs{'train', 'val'} do
       local dataset = datasets.create(opt, split)
       loaders[i] = M.DataLoader(dataset, opt, split)
